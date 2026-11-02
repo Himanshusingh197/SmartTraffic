@@ -1,4 +1,5 @@
 import os
+import time
 import uuid
 
 from flask import (
@@ -161,6 +162,25 @@ def api_history():
 def esp32_signals():
     return jsonify(ok=True, **get_controller().get_state())
 
+# Latest status data posted by the ESP32
+esp32_status = {}
+
+
+@app.route("/api/esp32/status", methods=["POST"])
+def esp32_status_post():
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return jsonify(ok=False, error="Send a JSON object"), 400
+    body["time"] = time.strftime("%H:%M:%S")
+    esp32_status.update(body)
+    return jsonify(ok=True, received=body)
+
+
+@app.route("/api/esp32/status", methods=["GET"])
+def esp32_status_get():
+    return jsonify(ok=True, **esp32_status)
+
+
 @app.route("/api/export/csv")
 def export_csv():
     import csv
@@ -180,6 +200,8 @@ def export_csv():
             "Content-Disposition": "attachment; filename=traffic_history.csv",
         },
     )
+
+
 @app.errorhandler(413)
 def too_large(_e):
     return jsonify(ok=False, error="File too large (max 10 MB)"), 413
