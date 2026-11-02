@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Traffic — Control Center</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🚦</div>
+      <div class="brand-text">
+        <h1>Smart Traffic</h1>
+        <p>Adaptive Signal Control</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span id="clock" class="clock">--:--:--</span>
+      <span id="status-badge" class="badge badge-wait">Connecting…</span>
+    </div>
+  </header>
+
+  <div class="page">
+
+    <div id="history-stats" class="kpi-strip"></div>
+
+    <section class="card live-preview-card">
+      <div class="card-head">
+        <h2>📸 Live Camera Feeds</h2>
+        <span id="frame-badge" class="phase-pill phase-idle">no frame</span>
+      </div>
+      <div class="live-preview-grid">
+        <div class="preview-box">
+          <div class="preview-header">North <span id="ts-north" class="preview-ts"></span></div>
+          <img id="img-north" class="hidden" alt="north view" />
+          <div id="err-north" class="preview-err">Waiting…</div>
+        </div>
+        <div class="preview-box">
+          <div class="preview-header">South <span id="ts-south" class="preview-ts"></span></div>
+          <img id="img-south" class="hidden" alt="south view" />
+          <div id="err-south" class="preview-err">Waiting…</div>
+        </div>
+        <div class="preview-box">
+          <div class="preview-header">East <span id="ts-east" class="preview-ts"></span></div>
+          <img id="img-east" class="hidden" alt="east view" />
+          <div id="err-east" class="preview-err">Waiting…</div>
+        </div>
+        <div class="preview-box">
+          <div class="preview-header">West <span id="ts-west" class="preview-ts"></span></div>
+          <img id="img-west" class="hidden" alt="west view" />
+          <div id="err-west" class="preview-err">Waiting…</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="main-grid">
+
+      <section class="card signal-hero">
+        <div class="card-head">
+          <h2>Live Signal State</h2>
+          <span id="signal-phase" class="phase-pill phase-idle">idle</span>
+        </div>
+        <div class="signal-panel">
+          <div class="signal-card" data-lane="north">
+            <div class="signal-lane">North</div>
+            <div class="traffic-light">
+              <div class="signal-dots">
+                <span class="signal-dot"></span>
+                <span class="signal-dot"></span>
+                <span class="signal-dot"></span>
+              </div>
+            </div>
+            <div class="signal-remaining">—</div>
+          </div>
+          <div class="signal-card" data-lane="south">
+            <div class="signal-lane">South</div>
+            <div class="traffic-light">
+              <div class="signal-dots">
+                <span class="signal-dot"></span>
+                <span class="signal-dot"></span>
+                <span class="signal-dot"></span>
+              </div>
+            </div>
+            <div class="signal-remaining">—</div>
+          </div>
+          <div class="signal-card" data-lane="east">
+            <div class="signal-lane">East</div>
+            <div class="traffic-light">
+              <div class="signal-dots">
+                <span class="signal-dot"></span>
+                <span class="signal-dot"></span>
+                <span class="signal-dot"></span>
+              </div>
+            </div>
+            <div class="signal-remaining">—</div>
+          </div>
+          <div class="signal-card" data-lane="west">
+            <div class="signal-lane">West</div>
+            <div class="traffic-light">
+              <div class="signal-dots">
+                <span class="signal-dot"></span>
+                <span class="signal-dot"></span>
+                <span class="signal-dot"></span>
+              </div>
+            </div>
+            <div class="signal-remaining">—</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Timing Control</h2>
+          <p class="subtitle">Set vehicle counts, or auto-fill from detection</p>
+        </div>
+        <div class="timing-inputs">
+          <label>North <input type="number" id="c-north" value="0" min="0" /></label>
+          <label>South <input type="number" id="c-south" value="0" min="0" /></label>
+          <label>East  <input type="number" id="c-east"  value="0" min="0" /></label>
+          <label>West  <input type="number" id="c-west"  value="0" min="0" /></label>
+        </div>
+        <button id="timing-btn" class="btn btn-primary btn-block">Compute Timings</button>
+        <p id="timing-status" class="status"></p>
+        <div id="timing-result" class="hidden">
+          <div id="timing-grid" class="timing-grid"></div>
+          <p id="cycle-total" class="preview-meta"></p>
+        </div>
+      </section>
+
+    </div>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Vehicle Detection</h2>
+        <p class="subtitle">Upload one image per lane — YOLOv8 finds the vehicles</p>
+      </div>
+      <div class="lane-cards">
+
+        <div class="lane-card" data-lane="north">
+          <div class="lane-card-head">
+            <span class="lane-icon">🛣</span>
+            <span class="lane-name">North</span>
+          </div>
+          <div class="upload-row">
+            <input type="file" class="file-input" accept="image/png,image/jpeg,image/webp" />
+            <button class="upload-btn btn btn-secondary btn-sm" disabled>Upload</button>
+          </div>
+          <p class="upload-status status"></p>
+          <button class="detect-btn btn btn-accent btn-sm btn-block" disabled>Detect Vehicles</button>
+          <p class="detect-status status"></p>
+          <div class="detect-result hidden">
+            <img class="annotated" alt="annotated detections" />
+            <div class="counts"></div>
+          </div>
+        </div>
+
+        <div class="lane-card" data-lane="south">
+          <div class="lane-card-head">
+            <span class="lane-icon">🛣</span>
+            <span class="lane-name">South</span>
+          </div>
+          <div class="upload-row">
+            <input type="file" class="file-input" accept="image/png,image/jpeg,image/webp" />
+            <button class="upload-btn btn btn-secondary btn-sm" disabled>Upload</button>
+          </div>
+          <p class="upload-status status"></p>
+          <button class="detect-btn btn btn-accent btn-sm btn-block" disabled>Detect Vehicles</button>
+          <p class="detect-status status"></p>
+          <div class="detect-result hidden">
+            <img class="annotated" alt="annotated detections" />
+            <div class="counts"></div>
+          </div>
+        </div>
+
+        <div class="lane-card" data-lane="east">
+          <div class="lane-card-head">
+            <span class="lane-icon">🛣</span>
+            <span class="lane-name">East</span>
+          </div>
+          <div class="upload-row">
+            <input type="file" class="file-input" accept="image/png,image/jpeg,image/webp" />
+            <button class="upload-btn btn btn-secondary btn-sm" disabled>Upload</button>
+          </div>
+          <p class="upload-status status"></p>
+          <button class="detect-btn btn btn-accent btn-sm btn-block" disabled>Detect Vehicles</button>
+          <p class="detect-status status"></p>
+          <div class="detect-result hidden">
+            <img class="annotated" alt="annotated detections" />
+            <div class="counts"></div>
+          </div>
+        </div>
+
+        <div class="lane-card" data-lane="west">
+          <div class="lane-card-head">
+            <span class="lane-icon">🛣</span>
+            <span class="lane-name">West</span>
+          </div>
+          <div class="upload-row">
+            <input type="file" class="file-input" accept="image/png,image/jpeg,image/webp" />
+            <button class="upload-btn btn btn-secondary btn-sm" disabled>Upload</button>
+          </div>
+          <p class="upload-status status"></p>
+          <button class="detect-btn btn btn-accent btn-sm btn-block" disabled>Detect Vehicles</button>
+          <p class="detect-status status"></p>
+          <div class="detect-result hidden">
+            <img class="annotated" alt="annotated detections" />
+            <div class="counts"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Live Camera Feeds</h2>
+        <p class="subtitle">IP Webcam example: <code>http://192.168.4.50:8080/shot.jpg</code></p>
+      </div>
+      <div class="live-urls">
+        <label>North URL <input type="text" id="url-north" placeholder="http://…/shot.jpg" /></label>
+        <label>South URL <input type="text" id="url-south" placeholder="http://…/shot.jpg" /></label>
+        <label>East URL  <input type="text" id="url-east"  placeholder="http://…/shot.jpg" /></label>
+        <label>West URL  <input type="text" id="url-west"  placeholder="http://…/shot.jpg" /></label>
+      </div>
+      <div class="live-actions">
+        <button id="live-start" class="btn btn-primary">▶  Start Live</button>
+        <button id="live-stop"  class="btn btn-danger" disabled>■  Stop Live</button>
+      </div>
+      <p id="live-status" class="status"></p>
+      <div id="live-result" class="hidden">
+        <p id="live-updated" class="preview-meta"></p>
+        <div id="live-grid" class="timing-grid"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Cycle History</h2>
+        <a href="/api/export/csv" class="btn btn-ghost btn-sm">⬇  Export CSV</a>
+      </div>
+      <div class="table-wrap">
+        <table id="history-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Time</th><th>Source</th>
+              <th>N (count / green)</th>
+              <th>S (count / green)</th>
+              <th>E (count / green)</th>
+              <th>W (count / green)</th>
+              <th>Total</th>
+              <th>Cycle</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

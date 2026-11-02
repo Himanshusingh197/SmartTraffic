@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+uploads/
+detected/
+traffic.db
+traffic.db-shm
+traffic.db-wal
+.env
+.vscode/
+.DS_Store
+*.log
+yolov8n.pt
+frames/
