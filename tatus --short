@@ -1,0 +1,7 @@
+ PlatformIO/Projects/traffic_node/.gitignore     |   5 [32m+[m
+ PlatformIO/Projects/traffic_node/include/README |  37 [32m+++++[m
+ PlatformIO/Projects/traffic_node/lib/README     |  46 [32m++++++[m
+ PlatformIO/Projects/traffic_node/platformio.ini |  10 [32m++[m
+ PlatformIO/Projects/traffic_node/src/main.cpp   | 191 [32m++++++++++++++++++++++++[m
+ PlatformIO/Projects/traffic_node/test/README    |  11 [32m++[m
+ 6 files changed, 300 insertions(+)

@@ -157,28 +157,35 @@ def api_history():
     return jsonify(ok=True, stats=db_stats(), cycles=recent_cycles(limit))
 
 
-# ---- ESP32 endpoint ----
-@app.route("/api/esp32/signals")
-def esp32_signals():
+# ---- ESP8266 endpoints ----
+@app.route("/api/esp8266/signals")
+def esp8266_signals():
     return jsonify(ok=True, **get_controller().get_state())
 
-# Latest status data posted by the ESP32
-esp32_status = {}
+# Latest status posted by each ESP board, keyed by device name
+esp_boards = {}
 
 
-@app.route("/api/esp32/status", methods=["POST"])
-def esp32_status_post():
+@app.route("/api/esp8266/status", methods=["POST"])
+def esp8266_status_post():
     body = request.get_json(silent=True)
     if not isinstance(body, dict):
         return jsonify(ok=False, error="Send a JSON object"), 400
+    device = str(body.get("device") or "unknown")[:32]
     body["time"] = time.strftime("%H:%M:%S")
-    esp32_status.update(body)
+    body["last_seen"] = time.time()
+    esp_boards[device] = body
     return jsonify(ok=True, received=body)
 
 
-@app.route("/api/esp32/status", methods=["GET"])
-def esp32_status_get():
-    return jsonify(ok=True, **esp32_status)
+@app.route("/api/esp8266/status", methods=["GET"])
+def esp8266_status_get():
+    now = time.time()
+    boards = {
+        name: {**b, "online": (now - b["last_seen"]) < 15}
+        for name, b in esp_boards.items()
+    }
+    return jsonify(ok=True, boards=boards)
 
 
 @app.route("/api/export/csv")

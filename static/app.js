@@ -339,7 +339,7 @@ function renderDots(state) {
 
 async function pollSignals() {
   try {
-    const res = await fetch("/api/esp32/signals");
+    const res = await fetch("/api/esp8266/signals");
     const data = await res.json();
     if (!data.ok) return;
     document.querySelectorAll(".signal-card").forEach((card) => {
